@@ -142,7 +142,7 @@
                 }
             },
             mounted() {
-                fetch('.sheet_url')
+                fetch('sheet_url.txt')
                     .then(response => response.text())
                     .then(url => {
                         fetch(url.trim()) // Asegura que no hay espacios en blanco alrededor de la URL
