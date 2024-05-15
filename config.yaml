@@ -1,10 +1,10 @@
 # URL from which to load CSV data. This can be changed to point to a new data source as needed.
-dataSourceUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSSpBspACR3RQumJNpSAL94KBcr5DAQsAp655w5TVEc-wdKsg8x7P3op_3pCXD_S9gnOflKwAMzYBUx/pub?gid=712384378&single=true&output=csv"
+dataSourceUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSHk72X0XOwjPovNdZuHU1kAurOuIZMJXTimPGg6PQmIL0mMY00OoAWuMAU2CPpKOzt0UOdYnIHHiLg/pub?gid=712384378&single=true&output=csv"
 
 # Number of characters to show in the item description before truncating. This value can be adjusted to show more or less text.
 descriptionLength: 400
 
 # List of facets that can be used to filter items. New facets can be added or existing ones removed as needed.
 activeFacets:
-  - "DURATION"
+  - "TIPO"
   - "TAGS"
