@@ -6,5 +6,5 @@ descriptionLength: 400
 
 # List of facets that can be used to filter items. New facets can be added or existing ones removed as needed.
 activeFacets:
+  - "DURATION"
   - "TAGS"
-  - "VIEWS"

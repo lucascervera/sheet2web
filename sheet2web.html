@@ -4,11 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item Gallery</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>sheet2web Item Directory</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <style>
+        .aspect-ratio-16-9 {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+        }
+
+        .aspect-ratio-16-9 img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .responsive-iframe-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+        }
+
+        .responsive-iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,23 +49,34 @@
         <div v-if="isLoading" class="loading-container">
             Cargando...
         </div>
-
-        <div class="mb-5 scrollable-tags">Facets
-            <div v-for="facetInfo in facetCounts" :key="facetInfo.facet">
-                <button @click="toggleVisibility(facetInfo.facet)">
-                    {{ visibleFacets[facetInfo.facet] ? 'Ocultar ' + facetInfo.facet : 'Mostrar ' + facetInfo.facet }}
-                </button>
-                <div v-if="visibleFacets[facetInfo.facet]">
-                    <h3>{{ facetInfo.facet }}</h3>
-                    <span v-for="valueInfo in facetInfo.values" :key="valueInfo.value"
-                        :class="{'bg-blue-500 text-white': activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value], 'bg-gray-200 text-gray-700': !(activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value])}"
-                        class="inline-block rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2 cursor-pointer"
-                        @click="toggleFacet(facetInfo.facet, valueInfo.value)">
-                        {{ valueInfo.value }} ({{ valueInfo.count }})
-                    </span>
+        <div role="alert" class="alert mb-2">
+            <div class="flex-1">
+                <div class="scrollable-tags">
+                    <div class="flex flex-wrap">
+                        <div v-for="facetInfo in facetCounts" :key="facetInfo.facet" class="mr-2">
+                            <button @click="toggleVisibility(facetInfo.facet)" class="btn btn-sm drop-shadow"><i
+                                    class="fas fa-filter"></i>
+                                {{ visibleFacets[facetInfo.facet] ? ' ' + facetInfo.facet : ' ' +
+                                facetInfo.facet
+                                }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-for="facetInfo in facetCounts" :key="facetInfo.facet">
+                        <div v-if="visibleFacets[facetInfo.facet]">
+                            <h3 class="text-2xl font-bold tracking-tight text-gray-900 m-2">{{ facetInfo.facet }}</h3>
+                            <span v-for=" valueInfo in facetInfo.values" :key="valueInfo.value"
+                                :class="{'bg-blue-500 text-white': activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value], 'bg-gray-200 text-gray-700': !(activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value])}"
+                                class="inline-block rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2 cursor-pointer"
+                                @click="toggleFacet(facetInfo.facet, valueInfo.value)">
+                                {{ valueInfo.value }} ({{ valueInfo.count }})
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div v-for="item in filteredItems" :key="item.ID" class="max-w-sm rounded overflow-hidden shadow-lg">
                 <div class="aspect-ratio-16-9">
