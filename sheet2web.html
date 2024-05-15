@@ -47,7 +47,7 @@
 <body>
     <div id="app" class="p-5">
         <div v-if="isLoading" class="loading-container">
-            Cargando...
+            Loading...
         </div>
         <div role="alert" class="alert mb-2">
             <div class="flex-1">
@@ -115,7 +115,7 @@
             data: {
                 items: [],
                 selectedItem: null,
-                visibleFacets: {}, // Objeto para controlar la visibilidad de cada facet
+                visibleFacets: {}, // Object to control the visibility of each facet
                 activeFacets: {},
                 isLoading: true,
                 config: {}
@@ -157,7 +157,7 @@
                     const facetValues = {};
                     this.items.forEach(item => {
                         this.config.activeFacets.forEach(facetName => {
-                            // Dividir los valores por comas y filtrar los no deseados
+                            // Split values by commas and filter out unwanted values
                             const values = item[facetName].split(',').map(value => value.trim()).filter(value => value !== "");
 
                             values.forEach(value => {
@@ -172,14 +172,14 @@
                         });
                     });
 
-                    // Convertir el objeto facetValues en un array más manejable para el v-for
+                    // Convert the facetValues object into a more manageable array for the v-for
                     const result = [];
                     Object.keys(facetValues).forEach(facetName => {
                         const facets = Object.keys(facetValues[facetName]).map(value => ({
                             value: value,
                             count: facetValues[facetName][value]
                         }));
-                        facets.sort((a, b) => b.count - a.count); // Ordenar por número de ocurrencias
+                        facets.sort((a, b) => b.count - a.count); // Sort by number of occurrences
                         result.push({
                             facet: facetName,
                             values: facets
@@ -189,14 +189,14 @@
                 },
                 filteredItems() {
                     if (!this.items || this.items.length === 0) {
-                        return []; // Asegura que items esté definido y no está vacío
+                        return []; // Ensure items is defined and not empty
                     }
                     if (Object.keys(this.activeFacets).length === 0) {
-                        return this.items; // Si no hay facetas activas, muestra todos los items
+                        return this.items; // If there are no active facets, show all items
                     }
                     return this.items.filter(item => {
                         return Object.keys(this.activeFacets).every(facetName => {
-                            if (!item[facetName]) return false; // Si el item no tiene este campo de faceta, no incluir
+                            if (!item[facetName]) return false; // If the item does not have this facet field, do not include
                             const itemFacetValues = item[facetName].split(',').map(value => value.trim());
                             const activeFacetValues = this.activeFacets[facetName];
                             return itemFacetValues.some(value => activeFacetValues && activeFacetValues[value]);
