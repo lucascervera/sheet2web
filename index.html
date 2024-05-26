@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sheet2web Item Directory</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <style>
+        .aspect-ratio-16-9 {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+        }
+
+        .aspect-ratio-16-9 img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .responsive-iframe-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+        }
+
+        .responsive-iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="p-5">
+        <div role="alert" class="alert mb-2">
+            <div v-if="isLoading" class="loading-container">
+                Loading...
+            </div>
+            <div class="flex-1">
+                <div class="scrollable-tags">
+                    <div class="flex flex-wrap">
+                        <button @click="resetFilters" class="btn btn-sm mb-4 mr-2 drop-shadow"><i
+                                class="fa fa-window-close" aria-hidden="true"></i>Filters (<span
+                                v-if="activeFiltersText" class="text-gray-700">{{ activeFiltersText
+                                }}</span>)</button>
+                        <div v-for="facetInfo in facetCounts" :key="facetInfo.facet" class="mr-2">
+                            <button @click="toggleVisibility(facetInfo.facet)" class="btn btn-sm drop-shadow">
+                                <i class="fas fa-filter"></i>
+                                {{ visibleFacets[facetInfo.facet] ? ' ' + facetInfo.facet : ' ' + facetInfo.facet }}
+                            </button>
+                        </div>
+                    </div>
+                    <div v-for="facetInfo in facetCounts" :key="facetInfo.facet">
+                        <div v-if="visibleFacets[facetInfo.facet]">
+                            <h3 class="text-2xl font-bold tracking-tight text-gray-900 m-2">{{ facetInfo.facet }}</h3>
+                            <span v-for="valueInfo in facetInfo.values" :key="valueInfo.value"
+                                :class="{'bg-blue-500 text-white': activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value], 'bg-gray-200 text-gray-700': !(activeFacets[facetInfo.facet] && activeFacets[facetInfo.facet][valueInfo.value])}"
+                                class="inline-block rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2 cursor-pointer"
+                                @click="toggleFacet(facetInfo.facet.toLowerCase(), valueInfo.value.toLowerCase())">
+                                {{ valueInfo.value }} ({{ valueInfo.count }})
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div v-for="item in filteredItems" :key="item.id" class="max-w-sm rounded overflow-hidden shadow-lg">
+                <div class="aspect-ratio-16-9">
+                    <img :src="item.image" alt="Thumbnail" class="cursor-pointer" @click="showModal(item)">
+                </div>
+                <div class="px-6 py-4">
+                    <div class="font-bold text-xl mb-2">
+                        <a href="#" class="text-blue-700 hover:text-blue-900" @click.prevent="showModal(item)">
+                            {{ item.title }}
+                        </a>
+                    </div>
+                    <p>{{ trimDescription(item.description) }}</p>
+                    <div class="mt-2">
+                        <span
+                            class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                            v-for="tag in item.tags ? item.tags.split(',') : []" :key="tag">{{ tag }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="selectedItem" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+            @click.self="selectedItem = null">
+            <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                <div class="responsive-iframe-container" v-html="selectedItem.content">
+                </div>
+                <div class="mt-3 text-center">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        @click="selectedItem = null">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                items: [],
+                allItems: [], // Store all items to reset filters
+                selectedItem: null,
+                visibleFacets: {}, // Object to control the visibility of each facet
+                activeFacets: {},
+                isLoading: true,
+                config: {}
+            },
+            methods: {
+                showModal(item) {
+                    this.selectedItem = item;
+                },
+                trimDescription(description) {
+                    return description.length > this.config.descriptionLength ? description.substr(0, this.config.descriptionLength) + '...' : description;
+                },
+                toggleVisibility(facetName) {
+                    if (!this.visibleFacets[facetName]) {
+                        this.$set(this.visibleFacets, facetName, true);
+                    } else {
+                        this.visibleFacets[facetName] = !this.visibleFacets[facetName];
+                    }
+                },
+                toggleFacet(facetName, value) {
+                    facetName = facetName.toLowerCase();
+                    value = value.toLowerCase();
+                    if (!this.activeFacets[facetName]) {
+                        this.$set(this.activeFacets, facetName, {});
+                    }
+                    if (this.activeFacets[facetName][value]) {
+                        this.$delete(this.activeFacets[facetName], value);
+                    } else {
+                        this.$set(this.activeFacets[facetName], value, true);
+                    }
+                    this.applyFilters();
+                },
+                parseFacets(facetsString, tagsString) {
+                    let facets = facetsString;
+                    if (!facets || facets.trim() === '') {
+                        facets = tagsString;
+                    }
+                    return facets ? facets.split(',').map(facet => facet.trim().toLowerCase()).filter(facet => facet !== "") : [];
+                },
+                getUrlParams() {
+                    const params = new URLSearchParams(window.location.search);
+                    params.forEach((value, key) => {
+                        this.setActiveFacetsFromUrl(key.toLowerCase(), value.toLowerCase());
+                    });
+                    this.applyFilters();
+                },
+                setActiveFacetsFromUrl(facetName, values) {
+                    facetName = facetName.toLowerCase();
+                    if (!this.activeFacets[facetName]) {
+                        this.$set(this.activeFacets, facetName, {});
+                    }
+                    values.split(',').forEach(value => {
+                        this.$set(this.activeFacets[facetName], value.trim().toLowerCase(), true);
+                    });
+                    console.log("Active Facets after URL params: ", this.activeFacets); // Debugging log
+                },
+                applyFilters() {
+                    if (Object.keys(this.activeFacets).length === 0) {
+                        this.items = this.allItems;
+                        return;
+                    }
+                    this.items = this.allItems.filter(item => {
+                        return Object.keys(this.activeFacets).some(facetName => {
+                            if (!item[facetName]) return false;
+                            const itemFacetValues = item[facetName] ? item[facetName].split(',').map(value => value.trim().toLowerCase()) : [];
+                            const activeFacetValues = this.activeFacets[facetName];
+                            return itemFacetValues.some(value => activeFacetValues && activeFacetValues[value]);
+                        });
+                    });
+                },
+                resetFilters() {
+                    this.activeFacets = {};
+                    this.items = this.allItems;
+                }
+            },
+            computed: {
+                facetCounts() {
+                    const facetValues = {};
+                    this.allItems.forEach(item => {
+                        this.config.activeFacets.forEach(facetName => {
+                            const lowerCaseFacetName = facetName.toLowerCase();
+                            if (item[lowerCaseFacetName]) {
+                                const values = item[lowerCaseFacetName].split(',').map(value => value.trim().toLowerCase()).filter(value => value !== "");
+                                values.forEach(value => {
+                                    if (!facetValues[lowerCaseFacetName]) {
+                                        facetValues[lowerCaseFacetName] = {};
+                                    }
+                                    if (!facetValues[lowerCaseFacetName][value]) {
+                                        facetValues[lowerCaseFacetName][value] = 0;
+                                    }
+                                    facetValues[lowerCaseFacetName][value]++;
+                                });
+                            }
+                        });
+                    });
+
+                    const result = [];
+                    Object.keys(facetValues).forEach(facetName => {
+                        const facets = Object.keys(facetValues[facetName]).map(value => ({
+                            value: value,
+                            count: facetValues[facetName][value]
+                        }));
+                        facets.sort((a, b) => b.count - a.count);
+                        result.push({
+                            facet: facetName,
+                            values: facets
+                        });
+                    });
+                    return result;
+                },
+                filteredItems() {
+                    return this.items;
+                },
+                activeFiltersText() {
+                    const filters = [];
+                    Object.keys(this.activeFacets).forEach(facetName => {
+                        const activeValues = Object.keys(this.activeFacets[facetName]).filter(value => this.activeFacets[facetName][value]);
+                        if (activeValues.length > 0) {
+                            filters.push(`${facetName}: ${activeValues.join(', ')}`);
+                        }
+                    });
+                    return filters.length > 0 ? `Filters: ${filters.join(' | ')}` : 'No active filters';
+                }
+            },
+            mounted() {
+                this.isLoading = true;
+                fetch('config.yaml')
+                    .then(response => response.text())
+                    .then(yaml => {
+                        this.config = jsyaml.load(yaml);
+                        fetch(this.config.dataSourceUrl.trim())
+                            .then(response => response.text())
+                            .then(csvData => {
+                                Papa.parse(csvData, {
+                                    header: true,
+                                    skipEmptyLines: true,
+                                    complete: (results) => {
+                                        this.allItems = results.data.map(item => {
+                                            const newItem = {};
+                                            Object.keys(item).forEach(key => {
+                                                newItem[key.toLowerCase()] = item[key];
+                                            });
+                                            return newItem;
+                                        });
+                                        this.items = this.allItems;
+                                        console.log("Items loaded: ", this.items); // Debugging log
+                                        this.getUrlParams(); // Apply filters from URL after loading data
+                                        this.isLoading = false;
+                                    }
+                                });
+                            });
+                    });
+            }
+        });
+    </script>
+</body>
+
+</html>
