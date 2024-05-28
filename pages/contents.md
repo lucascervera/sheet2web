@@ -4,11 +4,11 @@
 	  
 	  <h2>For example, turn <a href="https://docs.google.com/spreadsheets/d/17ZpUIl9HnmiUP_qrxaHqHOyxnA2SV6bf8-7UZ8J9Oyc/edit#gid=431711076" target="_blank">this sheet with data from a youtube channel</a>:</h2>
 	  
-	  <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSYeQU23wzvOVWrqFGqhjXqzhl3Gtdm1uLiVlv2W7eXR-zP0sLEQkm8isiX5PDnqZNYy9bx9xP14vry/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false" height="500px"></iframe>
+	  <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSYeQU23wzvOVWrqFGqhjXqzhl3Gtdm1uLiVlv2W7eXR-zP0sLEQkm8isiX5PDnqZNYy9bx9xP14vry/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false" width="500px" height="500px"></iframe>
 	  
 	  <h2>into <a href="https://innteresante.com/sheet2web/index.html" target="_blank">this web directory</a>:</h2>
 	  
-	  <iframe src="https://innteresante.com/sheet2web/index.html" height="500px"></iframe>
+	  <iframe src="https://innteresante.com/sheet2web/index.html" width="500px" height="500px"></iframe>
 - ## Some examples of sheet2web in action:
 - This [Google sheet](https://docs.google.com/spreadsheets/d/e/2PACX-1vSYeQU23wzvOVWrqFGqhjXqzhl3Gtdm1uLiVlv2W7eXR-zP0sLEQkm8isiX5PDnqZNYy9bx9xP14vry/pubhtml?gid=0&single=true) is published as a [csv file](https://docs.google.com/spreadsheets/d/e/2PACX-1vSYeQU23wzvOVWrqFGqhjXqzhl3Gtdm1uLiVlv2W7eXR-zP0sLEQkm8isiX5PDnqZNYy9bx9xP14vry/pub?gid=0&single=true&output=csv) generates:
 	- [Clean directory](https://innteresante.com/sheet2web/index.html)
